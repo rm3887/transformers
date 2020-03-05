@@ -18,6 +18,12 @@
 import logging
 import os
 
+# try:
+#     import json_lines
+# except ImportError as e:
+#     import pip
+#     pip.main(['install', json_lines])  
+
 from ...file_utils import is_tf_available
 from .utils import DataProcessor, InputExample, InputFeatures
 
@@ -514,7 +520,45 @@ class WnliProcessor(DataProcessor):
             label = line[-1]
             examples.append(InputExample(guid=guid, text_a=text_a, text_b=text_b, label=label))
         return examples
-
+    
+    
+class BoolqProcessor(DataProcessor):
+    '''Processor for the BoolQ data set (SuperGLUE version)'''
+    def get_example_from_tensor_dict(self, tensor_dict):
+        return InputExample(
+            tensor_dict['idx'].numpy(),
+            tensor_dict['passage'].numpy().decode('utf-8')
+            tensor_dict['question'].numpy().decode('utf-8')
+            str(tensor_dict['label'].numpy()),
+        )
+    
+    def _read_jsonl(input_file, quotechar = None):
+        tmp = []
+        with open(input_file, 'r', encoding = 'utf-8-sig') as f:
+            for item in enumerate(json_lines.reader(f)):
+                tmp.append(item)
+        return tmp
+        
+    def get_train_examples(self, data_dir):
+        return self._create_examples(self._read_jsonl(os.path.join(data_dir, 'train.jsonl')), 'train')
+    
+    def get_dev_examples(self, data_dir):
+        return self._create_examples(self._read_jsonl(os.path.join(data_dir, 'dev.jsonl')), 'dev')
+    
+    def get_labels(self):
+        return ['false', 'true']
+    
+    def _create_examples(self, lines, set_type):
+        examples = []
+        for i in range(len(lines)):
+            if i == 0:
+                continue
+            guid = "%s-%s" % (set_type, lines[i]['title'])
+            question = lines[i]['question']
+            passage = lines[i]['passage']
+            label = str(lines[i]['answer'])
+            examples.append(InputExample(guid=guid, text_a = passage, text_b = question, label = label))
+        return examples
 
 glue_tasks_num_labels = {
     "cola": 2,
@@ -526,6 +570,7 @@ glue_tasks_num_labels = {
     "qnli": 2,
     "rte": 2,
     "wnli": 2,
+    'boolq': 2,
 }
 
 glue_processors = {
@@ -539,6 +584,7 @@ glue_processors = {
     "qnli": QnliProcessor,
     "rte": RteProcessor,
     "wnli": WnliProcessor,
+    'boolq': BoolqProcessor,
 }
 
 glue_output_modes = {
@@ -552,4 +598,5 @@ glue_output_modes = {
     "qnli": "classification",
     "rte": "classification",
     "wnli": "classification",
+    'boolq': 'classification',
 }
