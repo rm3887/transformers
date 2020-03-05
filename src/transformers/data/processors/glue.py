@@ -535,7 +535,7 @@ class BoolqProcessor(DataProcessor):
     def _read_jsonl(input_file, quotechar = None):
         tmp = []
         with open(input_file, 'r', encoding = 'utf-8-sig') as f:
-            for item in enumerate(json_lines.reader(f)):
+            for i,item in enumerate(json_lines.reader(f)):
                 tmp.append(item)
         return tmp
         
