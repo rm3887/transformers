@@ -554,10 +554,10 @@ class BoolqProcessor(DataProcessor):
         for i in range(len(lines)):
             if i == 0:
                 continue
-            guid = "%s-%s" % (set_type, lines[i]['title'])
+            guid = "%s-%s" % (set_type, lines[i]['idx'])
             question = lines[i]['question']
             passage = lines[i]['passage']
-            label = str(lines[i]['answer'])
+            label = str(lines[i]['label'])
             examples.append(InputExample(guid=guid, text_a = passage, text_b = question, label = label))
         return examples
 
