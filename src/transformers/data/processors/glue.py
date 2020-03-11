@@ -17,6 +17,7 @@
 
 import logging
 import os
+import json
 
 # try:
 #     import json_lines
@@ -535,8 +536,8 @@ class BoolqProcessor(DataProcessor):
     def _read_jsonl(input_file, quotechar = None):
         tmp = []
         with open(input_file, 'r', encoding = 'utf-8-sig') as f:
-            for i,item in enumerate(json_lines.reader(f)):
-                tmp.append(item)
+            for line in f:
+                tmp.append(json.loads(line))
         return tmp
         
     def get_train_examples(self, data_dir):
