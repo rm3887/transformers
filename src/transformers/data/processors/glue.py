@@ -528,8 +528,8 @@ class BoolqProcessor(DataProcessor):
     def get_example_from_tensor_dict(self, tensor_dict):
         return InputExample(
             tensor_dict['idx'].numpy(),
-            tensor_dict['passage'].numpy().decode('utf-8')
-            tensor_dict['question'].numpy().decode('utf-8')
+            tensor_dict['passage'].numpy().decode('utf-8'),
+            tensor_dict['question'].numpy().decode('utf-8'),
             str(tensor_dict['label'].numpy()),
         )
     
@@ -541,13 +541,23 @@ class BoolqProcessor(DataProcessor):
         return tmp
         
     def get_train_examples(self, data_dir):
-        return self._create_examples(self._read_jsonl(os.path.join(data_dir, 'train.jsonl')), 'train')
+        input_file = str(os.path.join(data_dir,'train.jsonl'))
+        lines = []
+        with open(input_file, 'r', encoding = 'utf-8-sig') as f:
+            for line in f:
+                lines.append(json.loads(line))
+        return self._create_examples(lines=lines, set_type='train')
     
     def get_dev_examples(self, data_dir):
-        return self._create_examples(self._read_jsonl(os.path.join(data_dir, 'dev.jsonl')), 'dev')
+        input_file = str(os.path.join(data_dir,'val.jsonl'))
+        lines = []
+        with open(input_file, 'r', encoding = 'utf-8-sig') as f:
+            for line in f:
+                lines.append(json.loads(line))
+        return self._create_examples(lines=lines, set_type='dev')
     
     def get_labels(self):
-        return ['false', 'true']
+        return [False, True]
     
     def _create_examples(self, lines, set_type):
         examples = []
@@ -557,7 +567,7 @@ class BoolqProcessor(DataProcessor):
             guid = "%s-%s" % (set_type, lines[i]['idx'])
             question = lines[i]['question']
             passage = lines[i]['passage']
-            label = str(lines[i]['label'])
+            label = bool(lines[i]['label'])
             examples.append(InputExample(guid=guid, text_a = passage, text_b = question, label = label))
         return examples
 
