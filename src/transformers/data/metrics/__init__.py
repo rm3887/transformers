@@ -17,7 +17,7 @@
 try:
     from scipy.stats import pearsonr, spearmanr
     from sklearn.metrics import matthews_corrcoef, f1_score
-
+    fron sklearn.metrics import precision_recall_fscore_support
     _has_sklearn = True
 except (AttributeError, ImportError):
     _has_sklearn = False
@@ -35,10 +35,14 @@ if _has_sklearn:
     def acc_and_f1(preds, labels):
         acc = simple_accuracy(preds, labels)
         f1 = f1_score(y_true=labels, y_pred=preds)
+        prec, rec, fscore, support = precision_recall_fscore_support(y_true = labels, y_pred = preds)
         return {
             "acc": acc,
             "f1": f1,
             "acc_and_f1": (acc + f1) / 2,
+            "prec": prec,
+            "recall": rec,
+            "fscore": fscore,
         }
 
     def pearson_and_spearman(preds, labels):
@@ -75,7 +79,9 @@ if _has_sklearn:
         elif task_name == "hans":
             return {"acc": simple_accuracy(preds, labels)}
         elif task_name == 'boolq':
-            return {'acc': simple_accuracy(preds,labels)}
+            return {'acc': simple_accuracy(preds, labels)}
+        elif task_name == 'reddit':
+            return {'acc': simple_accuracy(preds, labels)}
         else:
             raise KeyError(task_name)
 
